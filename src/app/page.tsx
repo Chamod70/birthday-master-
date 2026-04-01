@@ -79,9 +79,15 @@ export default function Home() {
 
   const testNotification = () => {
     if (Notification.permission === "granted") {
-      new Notification("🚀 CelebrateMe Test", {
-        body: "This is a test alert! Your notifications are working supiri! 🎉",
-      });
+      setTimeout(() => {
+        try {
+          new Notification("🚀 CelebrateMe Test", {
+            body: "This is a test alert! Your notifications are working supiri! 🎉",
+          });
+        } catch (e) {
+          alert("Browser inhibited notification. Try clicking 'Allow' again.");
+        }
+      }, 1000);
     } else {
       subscribeToPush();
     }
