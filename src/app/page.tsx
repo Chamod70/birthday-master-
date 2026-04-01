@@ -78,21 +78,27 @@ export default function Home() {
   }, [isLoaded, birthdays.length, checkNotifications]);
 
   const testNotification = async () => {
+    console.log("Test Notification Triggered");
+    console.log("Permission Status:", Notification.permission);
+    
     if (Notification.permission === "granted") {
       try {
+        console.log("Waiting for Service Worker...");
         const registration = await navigator.serviceWorker.ready;
+        console.log("Service Worker Ready, showing notification...");
         registration.showNotification("🚀 CelebrateMe Test", {
           body: "This is a test alert! Your notifications are working supiri! 🎉",
           vibrate: [200, 100, 200],
           tag: 'test-notification'
         } as any);
       } catch (e) {
-        // Fallback for non-SW environments
+        console.error("SW Notification failed, trying fallback:", e);
         new Notification("🚀 CelebrateMe Test", {
           body: "This is a test alert! Notifications are working! 🎉",
         });
       }
     } else {
+      console.log("Permission not granted, subscribing...");
       subscribeToPush();
     }
   };
