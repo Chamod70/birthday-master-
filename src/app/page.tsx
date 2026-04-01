@@ -114,6 +114,14 @@ export default function Home() {
           </motion.div>
         </header>
 
+        {/* Hero Section - Upcoming Highlight */}
+        {isLoaded && birthdays.length > 0 && (
+          <HeroSection 
+            birthdays={birthdays} 
+            getDaysRemaining={getDaysRemaining} 
+          />
+        )}
+
         {/* Dynamic Navigation Tabs */}
         <div className="flex justify-center mb-12">
            <div className="glass p-2 rounded-[28px] border border-white/10 flex gap-1 shadow-2xl">
