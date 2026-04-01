@@ -82,34 +82,30 @@ export default function Home() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-fuchsia-600/10 blur-[150px] rounded-full" />
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-12 relative z-10">
         {/* Modern Header */}
         <header className="flex items-center justify-between mb-8 md:mb-16">
-          <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-5">
-            <div className="p-3 md:p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[18px] md:rounded-[22px] text-white shadow-2xl">
-              <Cake size={24} className="md:w-8 md:h-8" strokeWidth={2.5} />
+          <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl text-white shadow-2xl">
+              <Cake size={24} strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-2xl md:text-4xl font-black font-display tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              <h1 className="text-xl md:text-4xl font-black font-display tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
                 Celebrate<span className="text-indigo-400">Me</span>
               </h1>
-              <div className="hidden md:flex items-center gap-2 mt-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-slate-500">Professional Edition</p>
-              </div>
             </div>
           </motion.div>
           
-          <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-2 md:gap-3">
+          <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-2">
             {!user ? (
-              <button onClick={handleSignIn} className="px-5 py-3 md:px-8 md:py-4 glass rounded-[16px] md:rounded-[20px] text-xs md:text-sm font-black text-white hover:bg-white/10 transition-all border border-white/5 flex items-center gap-2 uppercase tracking-widest leading-none">
-                <User size={16} /> Cloud
+              <button onClick={handleSignIn} className="px-4 py-2.5 glass rounded-xl text-[10px] md:text-sm font-black text-white hover:bg-white/10 transition-all border border-white/5 flex items-center gap-2 uppercase tracking-widest">
+                <User size={14} /> Cloud
               </button>
             ) : (
-              <div className="flex items-center gap-2 md:gap-3 bg-white/5 p-1.5 md:p-2 rounded-[20px] md:rounded-[24px] border border-white/5">
-                <button onClick={subscribeToPush} className="p-2.5 md:p-3 bg-indigo-500/10 text-indigo-400 rounded-xl transition-all"><Bell size={18} className="md:w-[22px] md:h-[22px]" /></button>
-                <div className="w-px h-5 bg-white/10 mx-px" />
-                <button onClick={handleSignOut} className="p-2.5 md:p-3 text-slate-400 rounded-xl transition-all"><User size={18} className="md:w-[22px] md:h-[22px]" /></button>
+              <div className="flex items-center gap-1.5 bg-white/5 p-1.5 rounded-2xl border border-white/5">
+                <button onClick={subscribeToPush} className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl transition-all"><Bell size={18} /></button>
+                <div className="w-px h-5 bg-white/10 mx-1" />
+                <button onClick={handleSignOut} className="p-2.5 text-slate-400 rounded-xl transition-all"><User size={18} /></button>
               </div>
             )}
           </motion.div>
@@ -125,8 +121,8 @@ export default function Home() {
         )}
 
         {/* Dynamic Navigation Tabs */}
-        <div className="flex justify-center mb-8 md:mb-12 sticky top-4 z-20">
-           <div className="glass p-1.5 rounded-full border border-white/10 flex gap-1 shadow-2xl backdrop-blur-xl">
+        <div className="flex justify-center mb-10 md:mb-12 sticky top-6 z-20">
+           <div className="glass p-1.5 rounded-full border border-white/10 flex gap-1 shadow-2xl backdrop-blur-2xl">
               {[
                 { id: 'all', label: 'All', icon: Cake },
                 { id: 'upcoming', label: 'Coming', icon: Calendar },
@@ -136,11 +132,11 @@ export default function Home() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "px-6 md:px-8 py-2.5 md:py-3 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 transition-all",
-                    activeTab === tab.id ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/40" : "text-slate-400 hover:text-white"
+                    "px-7 md:px-10 py-3 rounded-full text-xs font-black flex items-center gap-2 transition-all",
+                    activeTab === tab.id ? "bg-indigo-500 text-white shadow-xl shadow-indigo-500/30" : "text-slate-400 hover:text-white"
                   )}
                 >
-                  <tab.icon size={16} className="md:w-[18px] md:h-[18px]" />
+                  <tab.icon size={16} />
                   <span className="hidden xs:inline">{tab.label}</span>
                 </button>
               ))}
