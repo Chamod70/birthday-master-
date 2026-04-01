@@ -120,6 +120,7 @@ export function AddBirthdayModal({
                       <option value="Friend" className="bg-slate-900">Friend</option>
                       <option value="Family" className="bg-slate-900">Family</option>
                       <option value="Colleague" className="bg-slate-900">Colleague</option>
+                      <option value="Office" className="bg-slate-900">Office</option>
                       <option value="Other" className="bg-slate-900">Other</option>
                     </select>
                   </div>

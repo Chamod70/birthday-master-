@@ -19,7 +19,7 @@ export interface Birthday {
   name: string;
   date: string;
   avatar_url?: string;
-  relationship?: "Family" | "Friend" | "Colleague" | "Other";
+  relationship?: "Family" | "Friend" | "Colleague" | "Office" | "Other";
   reminder_6am: boolean;
   reminder_6pm: boolean;
   notes?: string;
@@ -117,6 +117,22 @@ export function useBirthdays() {
     }
   };
 
+  const updateBirthday = async (id: string, data: Partial<Birthday>) => {
+    if (user) {
+       const payload: any = { ...data };
+       if (data.date) {
+         payload.birthday_date = data.date;
+         delete payload.date;
+       }
+       const { error } = await supabase.from("birthdays").update(payload).eq("id", id);
+       if (error) {
+         alert("Update failed: " + error.message);
+         return;
+       }
+    }
+    setBirthdays((prev) => prev.map(b => b.id === id ? { ...b, ...data } : b));
+  };
+
   const deleteBirthday = async (id: string) => {
     if (user) {
       await supabase.from("birthdays").delete().eq("id", id);
@@ -140,11 +156,7 @@ export function useBirthdays() {
     const daysRemaining = getDaysRemaining(dateString);
     let age = today.getFullYear() - birthDate.getFullYear();
     
-    // If birthday is in the future for this year, the age they will become is the increment
-    // Since we want to show how old they ARE BECOMING or ARE NOW.
-    // Let's show the age they will TURN on their next birthday.
     if (daysRemaining > 0 && daysRemaining < 366) {
-       // They haven't had this year's birthday yet, or they turn this age next
        const nextBirthdayYear = (isBefore(new Date(today.getFullYear(), month-1, day), startOfDay(today))) 
           ? today.getFullYear() + 1 
           : today.getFullYear();
@@ -229,6 +241,7 @@ export function useBirthdays() {
     birthdays: sortedBirthdays,
     user,
     addBirthday,
+    updateBirthday,
     deleteBirthday,
     getDaysRemaining,
     subscribeToPush,

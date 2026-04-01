@@ -167,6 +167,7 @@ export default function Home() {
                     <option value="Family" className="bg-slate-900">Family</option>
                     <option value="Friend" className="bg-slate-900">Friend</option>
                     <option value="Colleague" className="bg-slate-900">Colleague</option>
+                    <option value="Office" className="bg-slate-900">Office</option>
                   </select>
                </div>
                
@@ -176,11 +177,13 @@ export default function Home() {
                     filteredBirthdays.map((b, i) => (
                       <BirthdayCard 
                         key={b.id} 
+                        id={b.id}
                         name={b.name} 
                         date={b.date} 
                         daysRemaining={getDaysRemaining(b.date)} 
                         avatar_url={b.avatar_url} 
                         relationship={b.relationship} 
+                        notes={b.notes}
                         age={getCurrentAge(b.date)}
                         onDelete={() => deleteBirthday(b.id)} 
                         index={i} 
@@ -207,11 +210,13 @@ export default function Home() {
                   {upcoming30Days.length > 0 ? (upcoming30Days.map((b, i) => (
                     <BirthdayCard 
                       key={b.id} 
+                      id={b.id}
                       name={b.name} 
                       date={b.date} 
                       daysRemaining={getDaysRemaining(b.date)} 
                       avatar_url={b.avatar_url} 
                       relationship={b.relationship} 
+                      notes={b.notes}
                       age={getCurrentAge(b.date)}
                       onDelete={() => deleteBirthday(b.id)} 
                       index={i} 
