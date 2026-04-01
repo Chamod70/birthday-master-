@@ -77,17 +77,21 @@ export default function Home() {
     if (isLoaded) checkNotifications();
   }, [isLoaded, birthdays.length, checkNotifications]);
 
-  const testNotification = () => {
+  const testNotification = async () => {
     if (Notification.permission === "granted") {
-      setTimeout(() => {
-        try {
-          new Notification("🚀 CelebrateMe Test", {
-            body: "This is a test alert! Your notifications are working supiri! 🎉",
-          });
-        } catch (e) {
-          alert("Browser inhibited notification. Try clicking 'Allow' again.");
-        }
-      }, 1000);
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        registration.showNotification("🚀 CelebrateMe Test", {
+          body: "This is a test alert! Your notifications are working supiri! 🎉",
+          vibrate: [200, 100, 200],
+          tag: 'test-notification'
+        } as any);
+      } catch (e) {
+        // Fallback for non-SW environments
+        new Notification("🚀 CelebrateMe Test", {
+          body: "This is a test alert! Notifications are working! 🎉",
+        });
+      }
     } else {
       subscribeToPush();
     }
