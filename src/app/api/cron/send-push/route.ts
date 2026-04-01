@@ -41,6 +41,8 @@ export async function GET() {
     const currentMonth = today.getMonth() + 1;
     const currentDay = today.getDate();
 
+    const currentHour = today.getHours();
+
     let pushCount = 0;
 
     for (const birthday of birthdays) {
@@ -59,11 +61,12 @@ export async function GET() {
       let body = "";
       let newType = "";
 
-      if (days === 1 && birthday.reminder_6pm && !alreadySentD1) {
+      // Check current hour (e.g., cron runs at 18:00)
+      if (days === 1 && birthday.reminder_6pm && currentHour === 18 && !alreadySentD1) {
          title = "Tomorrow is a Celebration! 🎉";
          body = `Don't forget, ${birthday.name}'s birthday is tomorrow!`;
          newType = "d-1";
-      } else if (days === 0 && birthday.reminder_6am && !alreadySentDDay) {
+      } else if (days === 0 && birthday.reminder_6am && currentHour === 6 && !alreadySentDDay) {
          title = "It's Birthday Time! 🎂";
          body = `Wish ${birthday.name} a happy birthday today!`;
          newType = "d-day";
