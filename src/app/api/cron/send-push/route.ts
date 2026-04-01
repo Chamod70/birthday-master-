@@ -54,19 +54,14 @@ export async function GET() {
       
       const days = Math.round((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-      const alreadySentD1 = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-1";
       const alreadySentDDay = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-day";
 
       let title = "";
       let body = "";
       let newType = "";
 
-      // Check current hour (e.g., cron runs at 18:00)
-      if (days === 1 && birthday.reminder_6pm && currentHour === 18 && !alreadySentD1) {
-         title = "Tomorrow is a Celebration! 🎉";
-         body = `Don't forget, ${birthday.name}'s birthday is tomorrow!`;
-         newType = "d-1";
-      } else if (days === 0 && birthday.reminder_6am && currentHour === 6 && !alreadySentDDay) {
+      // Send ONLY at 6 AM on the actual birthday
+      if (days === 0 && birthday.reminder_6am && !alreadySentDDay) {
          title = "It's Birthday Time! 🎂";
          body = `Wish ${birthday.name} a happy birthday today!`;
          newType = "d-day";

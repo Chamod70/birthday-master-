@@ -144,22 +144,10 @@ export function useBirthdays() {
       const days = getDaysRemaining(birthday.date);
       let newB = { ...birthday };
 
-      const alreadySentD1 = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-1";
       const alreadySentDDay = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-day";
 
-      // 6 PM (18:00) - Night before
-      if (days === 1 && birthday.reminder_6pm && currentHour >= 18 && currentHour < 20 && !alreadySentD1) {
-        new Notification("Tomorrow is a Celebration! 🎉", { 
-          body: `Don't forget, ${birthday.name}'s birthday is tomorrow!`,
-          icon: birthday.avatar_url || undefined
-        });
-        newB.last_notification_year = currentYear;
-        newB.last_notification_type = "d-1";
-        stateChanged = true;
-      }
-
-      // 6 AM (06:00) - Actual day
-      if (days === 0 && birthday.reminder_6am && currentHour >= 6 && currentHour < 8 && !alreadySentDDay) {
+      // 6 AM (06:00) - Actual day - Show notification if app is open
+      if (days === 0 && birthday.reminder_6am && currentHour >= 6 && !alreadySentDDay) {
         new Notification("It's Birthday Time! 🎂", { 
           body: `Wish ${birthday.name} a happy birthday today!`,
           icon: birthday.avatar_url || undefined
