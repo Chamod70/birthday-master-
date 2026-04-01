@@ -19,8 +19,10 @@ export interface Birthday {
   name: string;
   date: string;
   avatar_url?: string;
-  reminder_6pm: boolean;
+  relationship?: "Family" | "Friend" | "Colleague" | "Other";
   reminder_6am: boolean;
+  reminder_6pm: boolean;
+  notes?: string;
   last_notification_type?: "d-1" | "d-day";
   last_notification_year?: number;
 }
@@ -88,10 +90,12 @@ export function useBirthdays() {
     if (user) {
       const payload = {
         name: data.name,
-        birthday_date: data.date, // Map from local 'date' to DB 'birthday_date'
+        birthday_date: data.date, 
         avatar_url: data.avatar_url,
-        reminder_6pm: data.reminder_6pm,
+        relationship: data.relationship,
         reminder_6am: data.reminder_6am,
+        reminder_6pm: data.reminder_6pm,
+        notes: data.notes,
         user_id: user.id
       };
 
@@ -146,7 +150,6 @@ export function useBirthdays() {
 
       const alreadySentDDay = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-day";
 
-      // 6 AM (06:00) - Actual day - Show notification if app is open
       if (days === 0 && birthday.reminder_6am && currentHour >= 6 && !alreadySentDDay) {
         new Notification("It's Birthday Time! 🎂", { 
           body: `Wish ${birthday.name} a happy birthday today!`,
@@ -185,6 +188,22 @@ export function useBirthdays() {
     }
   };
 
+  const stats = {
+    total: birthdays.length,
+    thisMonth: birthdays.filter(b => {
+      const m = parseInt(b.date.split("-")[1]);
+      return m === (new Date().getMonth() + 1);
+    }).length,
+    next30Days: birthdays.filter(b => getDaysRemaining(b.date) <= 30).length,
+    monthlyBreakdown: Array.from({ length: 12 }, (_, i) => {
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return {
+        name: monthNames[i],
+        count: birthdays.filter(b => parseInt(b.date.split("-")[1]) === (i + 1)).length
+      };
+    })
+  };
+
   return {
     birthdays: sortedBirthdays,
     user,
@@ -196,5 +215,6 @@ export function useBirthdays() {
     isLoaded,
     fetchData,
     errorMsg,
+    stats,
   };
 }
