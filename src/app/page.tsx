@@ -16,6 +16,7 @@ export default function Home() {
     addBirthday, 
     deleteBirthday, 
     getDaysRemaining, 
+    getCurrentAge,
     subscribeToPush,
     checkNotifications,
     isLoaded,
@@ -81,34 +82,34 @@ export default function Home() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-fuchsia-600/10 blur-[150px] rounded-full" />
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-12 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 relative z-10">
         {/* Modern Header */}
-        <header className="flex items-center justify-between mb-16">
-          <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-5">
-            <div className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[22px] text-white shadow-2xl shadow-indigo-500/20">
-              <Cake size={32} strokeWidth={2.5} />
+        <header className="flex items-center justify-between mb-8 md:mb-16">
+          <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-5">
+            <div className="p-3 md:p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[18px] md:rounded-[22px] text-white shadow-2xl">
+              <Cake size={24} className="md:w-8 md:h-8" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-4xl font-black font-display tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              <h1 className="text-2xl md:text-4xl font-black font-display tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
                 Celebrate<span className="text-indigo-400">Me</span>
               </h1>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="hidden md:flex items-center gap-2 mt-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-slate-500">Professional Edition</p>
               </div>
             </div>
           </motion.div>
           
-          <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-3">
+          <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-2 md:gap-3">
             {!user ? (
-              <button onClick={handleSignIn} className="px-8 py-4 glass rounded-[20px] text-sm font-black text-white hover:bg-white/10 transition-all border border-white/5 shadow-xl flex items-center gap-2 uppercase tracking-widest">
-                <User size={18} /> Cloud
+              <button onClick={handleSignIn} className="px-5 py-3 md:px-8 md:py-4 glass rounded-[16px] md:rounded-[20px] text-xs md:text-sm font-black text-white hover:bg-white/10 transition-all border border-white/5 flex items-center gap-2 uppercase tracking-widest leading-none">
+                <User size={16} /> Cloud
               </button>
             ) : (
-              <div className="flex items-center gap-3 bg-white/5 p-2 rounded-[24px] border border-white/5">
-                <button onClick={subscribeToPush} className="p-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 rounded-2xl transition-all"><Bell size={22} /></button>
-                <div className="w-px h-6 bg-white/10 mx-1" />
-                <button onClick={handleSignOut} className="p-3 text-slate-400 hover:text-red-400 transition-all"><User size={22} /></button>
+              <div className="flex items-center gap-2 md:gap-3 bg-white/5 p-1.5 md:p-2 rounded-[20px] md:rounded-[24px] border border-white/5">
+                <button onClick={subscribeToPush} className="p-2.5 md:p-3 bg-indigo-500/10 text-indigo-400 rounded-xl transition-all"><Bell size={18} className="md:w-[22px] md:h-[22px]" /></button>
+                <div className="w-px h-5 bg-white/10 mx-px" />
+                <button onClick={handleSignOut} className="p-2.5 md:p-3 text-slate-400 rounded-xl transition-all"><User size={18} className="md:w-[22px] md:h-[22px]" /></button>
               </div>
             )}
           </motion.div>
@@ -119,27 +120,28 @@ export default function Home() {
           <HeroSection 
             birthdays={birthdays} 
             getDaysRemaining={getDaysRemaining} 
+            getCurrentAge={getCurrentAge}
           />
         )}
 
         {/* Dynamic Navigation Tabs */}
-        <div className="flex justify-center mb-12">
-           <div className="glass p-2 rounded-[28px] border border-white/10 flex gap-1 shadow-2xl">
+        <div className="flex justify-center mb-8 md:mb-12 sticky top-4 z-20">
+           <div className="glass p-1.5 rounded-full border border-white/10 flex gap-1 shadow-2xl backdrop-blur-xl">
               {[
-                { id: 'all', label: 'All Birthdays', icon: Cake },
-                { id: 'upcoming', label: 'Coming Up', icon: Calendar },
-                { id: 'stats', label: 'Analytics', icon: SortAsc }
+                { id: 'all', label: 'All', icon: Cake },
+                { id: 'upcoming', label: 'Coming', icon: Calendar },
+                { id: 'stats', label: 'Stats', icon: SortAsc }
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "px-8 py-3 rounded-[22px] text-sm font-bold flex items-center gap-2 transition-all",
-                    activeTab === tab.id ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/40 translate-y-[-2px]" : "text-slate-400 hover:text-white"
+                    "px-6 md:px-8 py-2.5 md:py-3 rounded-full text-xs md:text-sm font-bold flex items-center gap-2 transition-all",
+                    activeTab === tab.id ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/40" : "text-slate-400 hover:text-white"
                   )}
                 >
-                  <tab.icon size={18} />
-                  {tab.label}
+                  <tab.icon size={16} className="md:w-[18px] md:h-[18px]" />
+                  <span className="hidden xs:inline">{tab.label}</span>
                 </button>
               ))}
            </div>
@@ -149,40 +151,49 @@ export default function Home() {
           {activeTab === "all" && (
             <motion.div key="all" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                {/* Controls */}
-               <div className="flex flex-col md:flex-row gap-4 mb-8">
-                  <div className="relative flex-1 group">
+               <div className="flex flex-col gap-3 mb-6">
+                  <div className="relative group">
                     <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" size={20} />
                     <input
                       type="text"
-                      placeholder="Search anyone..."
+                      placeholder="Search..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-[24px] p-5 pl-14 focus:ring-4 ring-indigo-500/20 outline-none text-white focus:bg-white/10 transition-all font-medium placeholder-slate-600 shadow-inner"
+                      className="w-full bg-white/5 border border-white/10 rounded-[20px] p-4 pl-14 outline-none text-white focus:bg-white/10 transition-all font-medium placeholder-slate-600"
                     />
                   </div>
                   <select 
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-[24px] px-8 py-5 text-sm font-bold text-slate-300 outline-none hover:bg-white/10 transition-all cursor-pointer appearance-none min-w-[200px]"
+                    className="bg-white/5 border border-white/10 rounded-[20px] px-6 py-4 text-sm font-bold text-slate-300 outline-none hover:bg-white/10 transition-all cursor-pointer appearance-none"
                   >
                     <option value="All" className="bg-slate-900">All Contacts</option>
-                    <option value="Family" className="bg-slate-900">Family Only</option>
-                    <option value="Friend" className="bg-slate-900">Friends Only</option>
-                    <option value="Colleague" className="bg-slate-900">Work Folks</option>
+                    <option value="Family" className="bg-slate-900">Family</option>
+                    <option value="Friend" className="bg-slate-900">Friend</option>
+                    <option value="Colleague" className="bg-slate-900">Colleague</option>
                   </select>
                </div>
                
                {/* Birthday Grid */}
-               <div className="grid gap-4">
+               <div className="grid gap-3">
                   {filteredBirthdays.length > 0 ? (
                     filteredBirthdays.map((b, i) => (
-                      <BirthdayCard key={b.id} name={b.name} date={b.date} daysRemaining={getDaysRemaining(b.date)} avatar_url={b.avatar_url} relationship={b.relationship} onDelete={() => deleteBirthday(b.id)} index={i} />
+                      <BirthdayCard 
+                        key={b.id} 
+                        name={b.name} 
+                        date={b.date} 
+                        daysRemaining={getDaysRemaining(b.date)} 
+                        avatar_url={b.avatar_url} 
+                        relationship={b.relationship} 
+                        age={getCurrentAge(b.date)}
+                        onDelete={() => deleteBirthday(b.id)} 
+                        index={i} 
+                      />
                     ))
                   ) : (
-                    <div className="py-32 text-center glass rounded-[40px] border-dashed border-2 border-white/10 opacity-40">
-                       <Filter className="mx-auto mb-4 text-slate-600" size={48} />
-                       <p className="text-xl font-bold">Everything filtered out</p>
-                       <p className="text-sm mt-1 uppercase tracking-widest font-black text-slate-600">Try a different search or filter</p>
+                    <div className="py-20 text-center glass rounded-[32px] border-dashed border-2 border-white/10 opacity-40">
+                       <Filter className="mx-auto mb-4 text-slate-600" size={40} />
+                       <p className="text-lg font-bold">Nothing found</p>
                     </div>
                   )}
                </div>
@@ -191,20 +202,26 @@ export default function Home() {
 
           {activeTab === "upcoming" && (
             <motion.div key="upcoming" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-               <div className="mb-8 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-3xl font-black">Next 30 Days</h2>
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-1">Get ready for these celebrations</p>
-                  </div>
-                  <div className="h-px flex-1 bg-white/10 mx-8 hidden md:block" />
-                  <div className="bg-indigo-500/20 text-indigo-400 px-6 py-2 rounded-full font-black text-sm border border-indigo-500/30">{upcoming30Days.length} Events</div>
+               <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl md:text-3xl font-black">Next 30 Days</h2>
+                  <div className="bg-indigo-500/20 text-indigo-400 px-4 py-1.5 rounded-full font-black text-[10px] md:text-sm border border-indigo-500/30 uppercase tracking-widest">{upcoming30Days.length} Events</div>
                </div>
                
-               <div className="grid gap-4">
+               <div className="grid gap-3">
                   {upcoming30Days.length > 0 ? (upcoming30Days.map((b, i) => (
-                    <BirthdayCard key={b.id} name={b.name} date={b.date} daysRemaining={getDaysRemaining(b.date)} avatar_url={b.avatar_url} relationship={b.relationship} onDelete={() => deleteBirthday(b.id)} index={i} />
+                    <BirthdayCard 
+                      key={b.id} 
+                      name={b.name} 
+                      date={b.date} 
+                      daysRemaining={getDaysRemaining(b.date)} 
+                      avatar_url={b.avatar_url} 
+                      relationship={b.relationship} 
+                      age={getCurrentAge(b.date)}
+                      onDelete={() => deleteBirthday(b.id)} 
+                      index={i} 
+                    />
                   ))) : (
-                    <div className="py-32 text-center opacity-40">No celebrations in the next month.</div>
+                    <div className="py-20 text-center opacity-40">No celebrations in the next month.</div>
                   )}
                </div>
             </motion.div>

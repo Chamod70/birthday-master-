@@ -132,6 +132,27 @@ export function useBirthdays() {
     return differenceInDays(nextBirthday, today);
   };
 
+  const getCurrentAge = (dateString: string) => {
+    const [year, month, day] = dateString.split("-").map(Number);
+    const birthDate = new Date(year, month - 1, day);
+    const today = new Date();
+    
+    const daysRemaining = getDaysRemaining(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    
+    // If birthday is in the future for this year, the age they will become is the increment
+    // Since we want to show how old they ARE BECOMING or ARE NOW.
+    // Let's show the age they will TURN on their next birthday.
+    if (daysRemaining > 0 && daysRemaining < 366) {
+       // They haven't had this year's birthday yet, or they turn this age next
+       const nextBirthdayYear = (isBefore(new Date(today.getFullYear(), month-1, day), startOfDay(today))) 
+          ? today.getFullYear() + 1 
+          : today.getFullYear();
+       return nextBirthdayYear - birthDate.getFullYear();
+    }
+    return age;
+  };
+
   const sortedBirthdays = [...birthdays].sort((a, b) => {
     return getDaysRemaining(a.date) - getDaysRemaining(b.date);
   });
@@ -216,5 +237,6 @@ export function useBirthdays() {
     fetchData,
     errorMsg,
     stats,
+    getCurrentAge,
   };
 }

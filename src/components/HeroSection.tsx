@@ -8,9 +8,10 @@ import { type Birthday } from "@/hooks/use-birthdays";
 interface HeroSectionProps {
   birthdays: Birthday[];
   getDaysRemaining: (date: string) => number;
+  getCurrentAge: (date: string) => number;
 }
 
-export function HeroSection({ birthdays, getDaysRemaining }: HeroSectionProps) {
+export function HeroSection({ birthdays, getDaysRemaining, getCurrentAge }: HeroSectionProps) {
   if (birthdays.length === 0) return null;
 
   const nextBirthday = birthdays[0];
@@ -57,6 +58,7 @@ export function HeroSection({ birthdays, getDaysRemaining }: HeroSectionProps) {
             </span>
             <h1 className="text-5xl md:text-6xl font-bold font-display mb-2 drop-shadow-lg">
               {nextBirthday.name}
+              <span className="text-indigo-400 text-2xl md:text-3xl ml-3">Turning {getCurrentAge(nextBirthday.date)}</span>
             </h1>
             <p className="text-xl text-slate-400 flex items-center justify-center md:justify-start gap-2">
               <Calendar size={20} className="text-indigo-400" />

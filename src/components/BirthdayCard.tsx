@@ -11,6 +11,7 @@ interface BirthdayCardProps {
   daysRemaining: number;
   avatar_url?: string;
   relationship?: string;
+  age?: number;
   onDelete?: () => void;
   onEdit?: () => void;
   index?: number;
@@ -22,6 +23,7 @@ export function BirthdayCard({
   daysRemaining,
   avatar_url,
   relationship = "Friend",
+  age,
   onDelete,
   onEdit,
   index = 0,
@@ -63,7 +65,10 @@ export function BirthdayCard({
 
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h3 className="font-black text-xl tracking-tight text-white/90">{name}</h3>
+            <h3 className="font-black text-xl tracking-tight text-white/90">
+              {name}
+              {age && <span className="ml-2 text-indigo-400/80 text-sm font-bold">({age})</span>}
+            </h3>
             <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", relColors[relationship] || relColors.Other)}>
               {relationship}
             </span>
