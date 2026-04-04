@@ -204,6 +204,7 @@ export default function Home() {
                         notes={b.notes}
                         age={getCurrentAge(b.date)}
                         onDelete={() => deleteBirthday(b.id)} 
+                        post_url={b.post_url}
                         index={i} 
                       />
                     ))
