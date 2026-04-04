@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Cake, Trash2, Calendar, UserCircle, MessageSquare, ChevronRight, Download, Image as ImageIcon } from "lucide-react";
+import { Cake, Trash2, Calendar, UserCircle, MessageSquare, ChevronRight, Download, Image as ImageIcon, Upload, Loader2, Check, Save, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { useBirthdays } from "@/hooks/use-birthdays";
+import { createClient } from "@/lib/supabase";
 
 interface BirthdayCardProps {
   id: string;
@@ -34,7 +35,14 @@ export function BirthdayCard({
 }: BirthdayCardProps) {
   const [isSelected, setIsSelected] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({ name, date, relationship, notes: notes || "" });
+  const [isUploading, setIsUploading] = useState(false);
+  const [editedData, setEditedData] = useState({ 
+    name, 
+    date, 
+    relationship, 
+    notes: notes || "",
+    post_url: post_url || ""
+  });
   
   const { updateBirthday } = useBirthdays();
   const isToday = daysRemaining === 0;
@@ -51,6 +59,35 @@ export function BirthdayCard({
     e.stopPropagation();
     await updateBirthday(id, editedData as any);
     setIsEditing(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const supabase = createClient();
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('birthday-posts')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('birthday-posts')
+        .getPublicUrl(filePath);
+
+      setEditedData({ ...editedData, post_url: publicUrl });
+    } catch (error: any) {
+      alert('Error uploading post: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -180,12 +217,44 @@ export function BirthdayCard({
               <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
                 <p className="text-[10px] uppercase font-black text-slate-500 mb-1 flex items-center gap-2"><MessageSquare size={10} /> Note</p>
                 {isEditing ? (
-                  <textarea 
-                    value={editedData.notes}
-                    onChange={(e) => setEditedData({...editedData, notes: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-2 text-sm text-slate-300 outline-none focus:bg-white/10 h-20"
-                    onClick={(e) => e.stopPropagation()}
-                  />
+                  <>
+                    <textarea 
+                      value={editedData.notes}
+                      onChange={(e) => setEditedData({...editedData, notes: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-2 text-sm text-slate-300 outline-none focus:bg-white/10 h-20"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div className="mt-3 space-y-2">
+                      <p className="text-[10px] uppercase font-black text-slate-500 flex items-center gap-2 px-1">
+                        <ImageIcon size={10} /> Update Birthday Post
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <label className="flex-1">
+                          <div className={cn(
+                            "w-full bg-white/5 border border-dashed border-white/20 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500/50 hover:bg-white/10 transition-all text-center",
+                            editedData.post_url && "border-indigo-500 bg-indigo-500/5"
+                          )}>
+                            {isUploading ? (
+                              <Loader2 size={16} className="animate-spin text-indigo-400 mb-1" />
+                            ) : editedData.post_url ? (
+                              <Check size={16} className="text-emerald-400 mb-1" />
+                            ) : (
+                              <Upload size={16} className="text-slate-500 mb-1" />
+                            )}
+                            <span className="text-[10px] font-bold text-slate-400">
+                               {isUploading ? "Uploading..." : editedData.post_url ? "Image Updated!" : "Change Image"}
+                            </span>
+                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} onClick={e => e.stopPropagation()} />
+                          </div>
+                        </label>
+                        {editedData.post_url && (
+                          <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/20">
+                            <img src={editedData.post_url} className="w-full h-full object-cover" alt="Post preview" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <p className="text-sm text-slate-300 italic">{notes || "No notes added yet..."}</p>
                 )}
