@@ -35,6 +35,7 @@ export async function GET() {
       return NextResponse.json({ success: true, message: "No data or subscriptions" });
     }
 
+    // 3. Process each birthday
     const today = new Date();
     today.setHours(0,0,0,0);
     const currentYear = today.getFullYear();
@@ -93,9 +94,26 @@ export async function GET() {
       }
     }
 
+    // 4. Update Heartbeat Table (Always updates, so user sees "Daily Activity")
+    await supabase.from("cron_heartbeat").insert({
+      last_run_at: new Date().toISOString(),
+      status: "ok",
+      processed_count: birthdays.length,
+      pushed_count: pushCount
+    });
+
     return NextResponse.json({ success: true, processed: birthdays.length, pushed: pushCount });
   } catch (error: any) {
     console.error("Cron Error:", error);
+    // Log error heartbeat if possible
+    try {
+        await supabase.from("cron_heartbeat").insert({
+            last_run_at: new Date().toISOString(),
+            status: "error",
+            processed_count: 0,
+            pushed_count: 0
+        });
+    } catch {}
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
