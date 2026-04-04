@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Cake, Trash2, Calendar, UserCircle, MessageSquare, ChevronRight } from "lucide-react";
+import { Cake, Trash2, Calendar, UserCircle, MessageSquare, ChevronRight, Download, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
@@ -14,6 +14,7 @@ interface BirthdayCardProps {
   relationship?: string;
   notes?: string;
   age?: number;
+  post_url?: string;
   onDelete?: () => void;
   index?: number;
 }
@@ -27,6 +28,7 @@ export function BirthdayCard({
   relationship = "Other",
   notes,
   age,
+  post_url,
   onDelete,
   index = 0,
 }: BirthdayCardProps) {
@@ -152,6 +154,29 @@ export function BirthdayCard({
             className="border-t border-white/5 bg-black/20"
           >
             <div className="p-4 space-y-4">
+              {post_url && (
+                <div className="space-y-2">
+                   <p className="text-[10px] uppercase font-black text-slate-500 flex items-center gap-2 px-1">
+                      <ImageIcon size={10} /> Birthday Post
+                   </p>
+                   <div className="relative group/post rounded-2xl overflow-hidden border border-white/10 aspect-video bg-white/5">
+                      <img src={post_url} className="w-full h-full object-cover" alt="Birthday Post" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/post:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                         <a 
+                          href={post_url} 
+                          download={`birthday-post-${name}.png`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-white transition-all transform hover:scale-110 flex items-center gap-2 font-bold text-xs"
+                         >
+                           <Download size={16} /> Download Card
+                         </a>
+                      </div>
+                   </div>
+                </div>
+              )}
+
               <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
                 <p className="text-[10px] uppercase font-black text-slate-500 mb-1 flex items-center gap-2"><MessageSquare size={10} /> Note</p>
                 {isEditing ? (

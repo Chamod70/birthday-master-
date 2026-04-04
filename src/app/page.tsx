@@ -236,6 +236,7 @@ export default function Home() {
                       relationship={b.relationship} 
                       notes={b.notes}
                       age={getCurrentAge(b.date)}
+                      post_url={b.post_url}
                       onDelete={() => deleteBirthday(b.id)} 
                       index={i} 
                     />

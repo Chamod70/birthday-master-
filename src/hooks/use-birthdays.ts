@@ -23,6 +23,7 @@ export interface Birthday {
   reminder_6am: boolean;
   reminder_6pm: boolean;
   notes?: string;
+  post_url?: string;
   last_notification_type?: "d-1" | "d-day";
   last_notification_year?: number;
 }
@@ -96,6 +97,7 @@ export function useBirthdays() {
         reminder_6am: data.reminder_6am,
         reminder_6pm: data.reminder_6pm,
         notes: data.notes,
+        post_url: data.post_url,
         user_id: user.id
       };
 
@@ -127,6 +129,7 @@ export function useBirthdays() {
         reminder_6am: data.reminder_6am,
         reminder_6pm: data.reminder_6pm,
         notes: data.notes,
+        post_url: data.post_url,
         user_id: user.id
       }));
 

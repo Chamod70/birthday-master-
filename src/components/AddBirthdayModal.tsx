@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, User, UserCircle, Save, Plus, Edit2 } from "lucide-react";
+import { X, Calendar, User, UserCircle, Save, Plus, Edit2, Upload, Loader2, Download, Image as ImageIcon, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase";
 
 interface AddBirthdayModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface AddBirthdayModalProps {
     reminder_6pm: boolean; 
     reminder_6am: boolean;
     notes?: string;
+    post_url?: string;
   }) => void;
 }
 
@@ -31,15 +33,47 @@ export function AddBirthdayModal({
   const [reminder_6pm, setReminder_6pm] = useState(false);
   const [reminder_6am, setReminder_6am] = useState(true);
   const [notes, setNotes] = useState("");
+  const [post_url, setPost_url] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const supabase = createClient();
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('birthday-posts')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('birthday-posts')
+        .getPublicUrl(filePath);
+
+      setPost_url(publicUrl);
+    } catch (error: any) {
+      alert('Error uploading post: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !date) return;
-    onSave({ name, date, avatar_url, relationship, reminder_6pm, reminder_6am, notes });
+    onSave({ name, date, avatar_url, relationship, reminder_6pm, reminder_6am, notes, post_url });
     setName("");
     setDate("");
     setAvatar_url("");
     setNotes("");
+    setPost_url("");
     onClose();
   };
 
@@ -173,6 +207,37 @@ export function AddBirthdayModal({
                     onChange={(e) => setNotes(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:ring-2 ring-indigo-500/50 outline-none placeholder-slate-500 hover:border-white/20 transition-all font-medium h-24 resize-none"
                   />
+                </div>
+
+                <div className="space-y-2 p-4 bg-white/5 rounded-2xl border border-white/5">
+                  <label className="text-xs uppercase tracking-widest font-bold text-slate-500 flex items-center gap-2 px-1">
+                    <ImageIcon size={12} /> Birthday Post (Image/Design)
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex-1">
+                      <div className={cn(
+                        "w-full bg-white/5 border border-dashed border-white/20 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500/50 hover:bg-white/10 transition-all text-center",
+                        post_url && "border-indigo-500 bg-indigo-500/5"
+                      )}>
+                        {isUploading ? (
+                          <Loader2 size={24} className="animate-spin text-indigo-400 mb-2" />
+                        ) : post_url ? (
+                          <Check size={24} className="text-emerald-400 mb-2" />
+                        ) : (
+                          <Upload size={24} className="text-slate-500 mb-2" />
+                        )}
+                        <span className="text-xs font-bold text-slate-400">
+                          {isUploading ? "Uploading..." : post_url ? "Post Uploaded!" : "Click to upload Birthday Post"}
+                        </span>
+                        <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={isUploading} />
+                      </div>
+                    </label>
+                    {post_url && (
+                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/20">
+                         <img src={post_url} className="w-full h-full object-cover" alt="Post preview" />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="pt-4 flex gap-4">
