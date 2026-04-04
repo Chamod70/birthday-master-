@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Cake, Trash2, Calendar, UserCircle, MessageSquare, ChevronRight, Download, Image as ImageIcon, Upload, Loader2, Check, Save, X } from "lucide-react";
+import { Cake, Trash2, Calendar, UserCircle, MessageSquare, ChevronRight, Download, Image as ImageIcon, Upload, Loader2, Check, Save, X, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
@@ -90,6 +90,27 @@ export function BirthdayCard({
       alert('Error uploading post: ' + error.message);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!post_url) return;
+    
+    try {
+      const response = await fetch(post_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `celebration-${name}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      // Fallback if fetch fails
+      window.open(post_url, '_blank');
     }
   };
 
@@ -199,19 +220,15 @@ export function BirthdayCard({
                    <p className="text-[10px] uppercase font-black text-slate-500 flex items-center gap-2 px-1">
                       <ImageIcon size={10} /> Birthday Post
                    </p>
-                   <div className="relative group/post rounded-2xl overflow-hidden border border-white/10 aspect-video bg-white/5">
+                   <div className="relative group/post rounded-2xl overflow-hidden border border-white/10 aspect-video bg-white/5 shadow-2xl">
                       <img src={post_url} className="w-full h-full object-cover" alt="Birthday Post" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/post:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                         <a 
-                          href={post_url} 
-                          download={`birthday-post-${name}.png`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={e => e.stopPropagation()}
-                          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-white transition-all transform hover:scale-110 flex items-center gap-2 font-bold text-xs"
+                      <div className="absolute top-4 right-4 z-10">
+                         <button 
+                          onClick={handleDownload}
+                          className="p-3 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-xl text-white transition-all transform active:scale-95 flex items-center gap-2 font-bold text-xs border border-white/10 shadow-lg"
                          >
-                           <Download size={16} /> Download Card
-                         </a>
+                           <Download size={16} className="text-indigo-400" /> Download
+                         </button>
                       </div>
                    </div>
                 </div>
@@ -283,15 +300,23 @@ export function BirthdayCard({
                     <>
                       <button 
                         onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-                        className="flex-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-black py-3 rounded-2xl text-xs uppercase tracking-widest transition-all border border-indigo-500/20 active:scale-95"
+                        className="flex-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition-all border border-indigo-500/20 active:scale-95 flex items-center justify-center gap-2"
                       >
-                        Edit Details
+                        <Edit2 size={16} /> Edit
                       </button>
+                      {post_url && (
+                        <button 
+                          onClick={handleDownload}
+                          className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition-all border border-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
+                        >
+                          <Download size={16} /> Download
+                        </button>
+                      )}
                       <button 
                         onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
-                        className="px-6 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-black py-3 rounded-2xl text-xs uppercase tracking-widest transition-all border border-red-500/20 active:scale-95 flex items-center justify-center"
+                        className="px-6 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition-all border border-red-500/20 active:scale-95 flex items-center justify-center"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                       </button>
                     </>
                  )}
