@@ -117,6 +117,40 @@ export function useBirthdays() {
     }
   };
 
+  const addBirthdays = async (dataList: Omit<Birthday, "id">[]) => {
+    if (user) {
+      const payloads = dataList.map(data => ({
+        name: data.name,
+        birthday_date: data.date, 
+        avatar_url: data.avatar_url,
+        relationship: data.relationship,
+        reminder_6am: data.reminder_6am,
+        reminder_6pm: data.reminder_6pm,
+        notes: data.notes,
+        user_id: user.id
+      }));
+
+      const { data: insertedList, error } = await supabase
+        .from("birthdays")
+        .insert(payloads)
+        .select();
+      
+      if (error) {
+        alert("Failed to save some birthdays: " + error.message);
+        console.error("Bulk Insert Error", error);
+      } else if (insertedList) {
+        const mapped = insertedList.map((inserted: any) => ({
+          ...inserted,
+          date: inserted.birthday_date
+        }));
+        setBirthdays((prev) => [...mapped, ...prev]);
+      }
+    } else {
+      const newBs: Birthday[] = dataList.map(data => ({ ...data, id: crypto.randomUUID() }));
+      setBirthdays((prev) => [...newBs, ...prev]);
+    }
+  };
+
   const updateBirthday = async (id: string, data: Partial<Birthday>) => {
     if (user) {
        const payload: any = { ...data };
@@ -241,6 +275,7 @@ export function useBirthdays() {
     birthdays: sortedBirthdays,
     user,
     addBirthday,
+    addBirthdays,
     updateBirthday,
     deleteBirthday,
     getDaysRemaining,

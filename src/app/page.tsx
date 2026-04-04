@@ -6,14 +6,17 @@ import { Plus, Search, Cake, User, SortAsc, Bell, Filter, Calendar } from "lucid
 import { BirthdayCard } from "@/components/BirthdayCard";
 import { HeroSection } from "@/components/HeroSection";
 import { AddBirthdayModal } from "@/components/AddBirthdayModal";
+import { ImportExcelModal } from "@/components/ImportExcelModal";
 import { useBirthdays } from "@/hooks/use-birthdays";
 import { cn } from "@/lib/utils";
+import { FileSpreadsheet } from "lucide-react";
 
 export default function Home() {
   const { 
     birthdays, 
     user,
     addBirthday, 
+    addBirthdays,
     deleteBirthday, 
     getDaysRemaining, 
     getCurrentAge,
@@ -25,6 +28,7 @@ export default function Home() {
   } = useBirthdays();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "upcoming" | "stats">("all");
   const [filterType, setFilterType] = useState<string>("All");
@@ -170,6 +174,20 @@ export default function Home() {
                     <option value="Office" className="bg-slate-900">Office</option>
                   </select>
                </div>
+
+               <div className="flex justify-between items-center mb-6 px-1">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <Cake className="text-indigo-400" size={20} />
+                    All Contacts
+                  </h2>
+                  <button 
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl font-bold text-xs hover:bg-emerald-500/20 transition-all uppercase tracking-widest"
+                  >
+                    <FileSpreadsheet size={16} />
+                    Import Excel
+                  </button>
+               </div>
                
                {/* Birthday Grid */}
                <div className="grid gap-3">
@@ -274,6 +292,7 @@ export default function Home() {
 
       <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setIsModalOpen(true)} className="fixed bottom-10 right-10 w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[28px] shadow-[0_20px_50px_-15px_rgba(99,102,241,1)] flex items-center justify-center text-white z-50 border-t border-white/30 active:scale-95 transition-transform"><Plus size={40} strokeWidth={3} /></motion.button>
       <AddBirthdayModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={addBirthday} />
+      <ImportExcelModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onImport={addBirthdays} />
     </main>
   );
 }
