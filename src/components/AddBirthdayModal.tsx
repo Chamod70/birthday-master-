@@ -12,12 +12,12 @@ interface AddBirthdayModalProps {
   onSave: (data: { 
     name: string; 
     date: string; 
-    avatar_url?: string; 
     relationship?: "Family" | "Friend" | "Colleague" | "Other";
     reminder_6pm: boolean; 
     reminder_6am: boolean;
     notes?: string;
     post_url?: string;
+    avatar_url?: string;
   }) => void;
 }
 
@@ -28,7 +28,6 @@ export function AddBirthdayModal({
 }: AddBirthdayModalProps) {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
-  const [avatar_url, setAvatar_url] = useState("");
   const [relationship, setRelationship] = useState<"Family" | "Friend" | "Colleague" | "Other">("Friend");
   const [reminder_6pm, setReminder_6pm] = useState(false);
   const [reminder_6am, setReminder_6am] = useState(true);
@@ -68,10 +67,18 @@ export function AddBirthdayModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !date) return;
-    onSave({ name, date, avatar_url, relationship, reminder_6pm, reminder_6am, notes, post_url });
+    onSave({ 
+      name, 
+      date, 
+      relationship, 
+      reminder_6pm, 
+      reminder_6am, 
+      notes, 
+      post_url,
+      avatar_url: post_url // Sync avatar with the post
+    });
     setName("");
     setDate("");
-    setAvatar_url("");
     setNotes("");
     setPost_url("");
     onClose();
@@ -141,36 +148,20 @@ export function AddBirthdayModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs uppercase tracking-widest font-bold text-slate-500 flex items-center gap-2 px-1">
-                      <UserCircle size={12} /> Relationship
-                    </label>
-                    <select
-                      value={relationship}
-                      onChange={(e) => setRelationship(e.target.value as any)}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:ring-2 ring-indigo-500/50 outline-none text-white hover:border-white/20 transition-all appearance-none"
-                    >
-                      <option value="Friend" className="bg-slate-900">Friend</option>
-                      <option value="Family" className="bg-slate-900">Family</option>
-                      <option value="Colleague" className="bg-slate-900">Colleague</option>
-                      <option value="Office" className="bg-slate-900">Office</option>
-                      <option value="Other" className="bg-slate-900">Other</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs uppercase tracking-widest font-bold text-slate-500 flex items-center gap-2 px-1">
-                      <Plus size={12} /> Avatar URL (optional)
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://images.unsplash.com/..."
-                      value={avatar_url}
-                      onChange={(e) => setAvatar_url(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:ring-2 ring-indigo-500/50 outline-none placeholder-slate-500 hover:border-white/20 transition-all text-sm"
-                    />
-                  </div>
+                <div className="space-y-1">
+                  <label className="text-xs uppercase tracking-widest font-bold text-slate-500 flex items-center gap-2 px-1">
+                    <UserCircle size={12} /> Relationship
+                  </label>
+                  <select
+                    value={relationship}
+                    onChange={(e) => setRelationship(e.target.value as any)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:ring-2 ring-indigo-500/50 outline-none text-white hover:border-white/20 transition-all appearance-none"
+                  >
+                    <option value="Friend" className="bg-slate-900">Friend</option>
+                    <option value="Family" className="bg-slate-900">Family</option>
+                    <option value="Colleague" className="bg-slate-900">Colleague</option>
+                    <option value="Other" className="bg-slate-900">Other</option>
+                  </select>
                 </div>
 
                 <div className="space-y-3 p-4 bg-white/5 rounded-2xl border border-white/5">

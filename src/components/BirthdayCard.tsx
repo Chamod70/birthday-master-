@@ -57,7 +57,10 @@ export function BirthdayCard({
 
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    await updateBirthday(id, editedData as any);
+    await updateBirthday(id, {
+      ...editedData,
+      avatar_url: editedData.post_url
+    } as any);
     setIsEditing(false);
   };
 
