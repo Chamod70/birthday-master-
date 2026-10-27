@@ -1,7 +1,6 @@
-const CACHE_NAME = 'celebrate-me-v5';
+const CACHE_NAME = 'celebrate-me-v10';
 
 self.addEventListener('install', (event) => {
-  // Force activate new SW immediately
   self.skipWaiting();
 });
 
@@ -19,11 +18,10 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Notice: We deliberately do NOT intercept 'fetch' with a dummy/empty cache.
-// An empty fetch event handler that catches errors and returns undefined
-// causes mobile browsers (especially Chrome Android on unstable networks)
-// to throw a fatal network error: "This page couldn't load".
-// Letting the browser natively handle fetch ensures rock-solid network resilience.
+// Important: Do NOT intercept network fetch requests with a broken catch handler.
+// Returning undefined from an empty cache causes mobile Chrome on weak/fluctuating
+// connections to crash with "This page couldn't load".
+// Allowing native browser fetch ensures full network resilience and auto-retries.
 
 self.addEventListener('push', function(event) {
   let title = "CelebrateMe Message";
