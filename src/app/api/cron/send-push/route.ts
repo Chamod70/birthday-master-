@@ -35,85 +35,70 @@ export async function GET() {
       return NextResponse.json({ success: true, message: "No data or subscriptions" });
     }
 
-    // 3. Process each birthday
     const today = new Date();
     today.setHours(0,0,0,0);
     const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    const currentDay = today.getDate();
 
     let pushCount = 0;
 
     for (const birthday of birthdays) {
       if (!birthday.birthday_date) continue;
-      
       const [y, m, d] = birthday.birthday_date.split("-").map(Number);
+      
       let nextBirthday = new Date(currentYear, m - 1, d);
       if (nextBirthday < today) nextBirthday = new Date(currentYear + 1, m - 1, d);
       
-      const daysDiff = Math.round((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      const days = Math.round((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+      const alreadySentD1 = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-1";
       const alreadySentDDay = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-day";
 
-      // Trigger condition: It's the birthday, reminder is on, and not already sent this year
-      if (daysDiff === 0 && birthday.reminder_6am && !alreadySentDDay) {
-        
-        // Find subscriptions for this specific user
-        const userSubscriptions = subscriptions.filter(s => s.user_id === birthday.user_id);
-        let sentAny = false;
+      let title = "";
+      let body = "";
+      let newType = "";
 
-        for (const sub of userSubscriptions) {
-          try {
-            const parsedSub = typeof sub.subscription === 'string' ? JSON.parse(sub.subscription) : sub.subscription;
-            
-            await webpush.sendNotification(parsedSub, JSON.stringify({
-              title: "Happy Birthday! 🎂",
-              body: `Wish ${birthday.name} a happy birthday today!`,
-              icon: birthday.avatar_url || "/icons/icon-192x192.png",
-            }));
+      if (days === 1 && birthday.reminder_6pm && !alreadySentD1) {
+         title = "Tomorrow is a Celebration! 🎉";
+         body = `Don't forget, ${birthday.name}'s birthday is tomorrow!`;
+         newType = "d-1";
+      } else if (days === 0 && birthday.reminder_6am && !alreadySentDDay) {
+         title = "It's Birthday Time! 🎂";
+         body = `Wish ${birthday.name} a happy birthday today!`;
+         newType = "d-day";
+      }
 
-            sentAny = true;
-            pushCount++;
-          } catch (e: any) {
-            console.error(`Push failed for sub of user ${birthday.user_id}:`, e);
-          }
-        }
+      if (title !== "") {
+         const payload = JSON.stringify({ title, body, icon: birthday.avatar_url });
+         
+         let sent = false;
+         for (const sub of subscriptions) {
+           try {
+              let parsedSub;
+              if (typeof sub.subscription === 'string') parsedSub = JSON.parse(sub.subscription);
+              else parsedSub = sub.subscription;
+              
+              await webpush.sendNotification(parsedSub, payload);
+              pushCount++;
+              sent = true;
+           } catch (e) {
+              console.error("Web Push failed", e);
+           }
+         }
 
-        // Log the outcome to Supabase
-        await supabase.from("notification_logs").insert({
-          birthday_id: birthday.id,
-          user_id: birthday.user_id,
-          status: sentAny ? "sent" : "failed",
-          error_message: sentAny ? null : "No active subscriptions reached"
-        });
-
-        if (sentAny) {
-          // Update birthday record to prevent double-sending
-          await supabase.from("birthdays").update({
-            last_notification_year: currentYear,
-            last_notification_type: "d-day"
-          }).eq("id", birthday.id);
-        }
+         if (sent) {
+           // Update DB
+           await supabase.from("birthdays").update({
+             last_notification_year: currentYear,
+             last_notification_type: newType
+           }).eq("id", birthday.id);
+         }
       }
     }
 
-    // 4. Update Heartbeat Table (Always updates, so user sees "Daily Activity")
-    await supabase.from("cron_heartbeat").insert({
-      last_run_at: new Date().toISOString(),
-      status: "ok",
-      processed_count: birthdays.length,
-      pushed_count: pushCount
-    });
-
-    return NextResponse.json({ success: true, processed: birthdays.length, pushed: pushCount });
+    return NextResponse.json({ success: true, pushed: pushCount });
   } catch (error: any) {
-    console.error("Cron Error:", error);
-    // Log error heartbeat if possible
-    try {
-        await supabase.from("cron_heartbeat").insert({
-            last_run_at: new Date().toISOString(),
-            status: "error",
-            processed_count: 0,
-            pushed_count: 0
-        });
-    } catch {}
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

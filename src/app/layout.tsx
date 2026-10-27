@@ -49,6 +49,7 @@ export default function RootLayout({
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(
                     function(registration) {
+                      registration.update().catch(function() {});
                       console.log('SW registration successful with scope: ', registration.scope);
                     },
                     function(err) {
