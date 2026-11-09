@@ -26,25 +26,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.5'
-
       - name: Build Installable APK
         working-directory: ./android
-        run: gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --no-daemon --stacktrace
 
       - name: Copy APK to root and public
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk CelebrateMe.apk
           cp android/app/build/outputs/apk/debug/app-debug.apk public/CelebrateMe.apk
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: CelebrateMe-APK
-          path: CelebrateMe.apk
 
       - name: Create/Update GitHub Release with APK
         uses: softprops/action-gh-release@v2
@@ -55,4 +44,3 @@ jobs:
           files: CelebrateMe.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
