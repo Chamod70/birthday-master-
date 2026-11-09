@@ -1,5 +1,6 @@
 package com.celebrateme.birthdaymaster;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,8 +10,6 @@ import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
-
-import androidx.core.app.NotificationCompat;
 
 public class NotificationHelper {
     public static final String CHANNEL_ID = "celebrate_me_6am_channel";
@@ -31,7 +30,7 @@ public class NotificationHelper {
                 channel.setDescription("Daily 6:00 AM Birthday & No Birthday Today reminders");
                 channel.enableVibration(true);
                 channel.setVibrationPattern(new long[]{0, 300, 150, 300});
-                channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 
                 Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 AudioAttributes attrs = new AudioAttributes.Builder()
@@ -45,6 +44,7 @@ public class NotificationHelper {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static void showNotification(Context context, int notificationId, String title, String body) {
         ensureChannel(context);
 
@@ -59,17 +59,23 @@ public class NotificationHelper {
 
         Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
+        Notification.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder = new Notification.Builder(context, CHANNEL_ID);
+        } else {
+            builder = new Notification.Builder(context)
+                    .setPriority(Notification.PRIORITY_MAX)
+                    .setSound(soundUri)
+                    .setVibrate(new long[]{0, 300, 150, 300});
+        }
+
+        builder.setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setStyle(new Notification.BigTextStyle().bigText(body))
+                .setCategory(Notification.CATEGORY_REMINDER)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setAutoCancel(true)
-                .setSound(soundUri)
-                .setVibrate(new long[]{0, 300, 150, 300})
                 .setContentIntent(pendingIntent);
 
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -78,4 +84,3 @@ public class NotificationHelper {
         }
     }
 }
-
