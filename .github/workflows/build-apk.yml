@@ -26,9 +26,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build Installable APK
+      - name: Install Gradle 8.5 and Build APK
         working-directory: ./android
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: |
+          curl -fL https://github.com/gradle/gradle-distributions/releases/download/v8.5.0/gradle-8.5-bin.zip -o /tmp/gradle.zip || curl -fL https://services.gradle.org/distributions/gradle-8.5-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          /tmp/gradle-8.5/bin/gradle assembleDebug --no-daemon
 
       - name: Copy APK to root and public
         run: |
