@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Cake, User, SortAsc, Bell, Filter, Calendar } from "lucide-react";
+import { Plus, Search, Cake, User, SortAsc, Bell, Filter, Calendar, Smartphone } from "lucide-react";
 import { BirthdayCard } from "@/components/BirthdayCard";
 import { HeroSection } from "@/components/HeroSection";
 import { AddBirthdayModal } from "@/components/AddBirthdayModal";
@@ -101,15 +101,28 @@ export default function Home() {
           </motion.div>
           
           <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-2">
+            <a
+              href="https://github.com/Chamod70/birthday-master-/releases/latest/download/CelebrateMe.apk"
+              download="CelebrateMe.apk"
+              className="px-3 py-2.5 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 rounded-xl text-[10px] md:text-xs font-black transition-all border border-emerald-500/30 flex items-center gap-1.5 uppercase tracking-wider"
+              title="Download Android APK"
+            >
+              <Smartphone size={15} /> APK
+            </a>
+            <button
+              onClick={subscribeToPush}
+              className="p-2.5 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 rounded-xl border border-indigo-500/20 transition-all"
+              title="Enable & Test 6:00 AM Daily Notification"
+            >
+              <Bell size={18} />
+            </button>
             {!user ? (
               <button onClick={handleSignIn} className="px-4 py-2.5 glass rounded-xl text-[10px] md:text-sm font-black text-white hover:bg-white/10 transition-all border border-white/5 flex items-center gap-2 uppercase tracking-widest">
                 <User size={14} /> Cloud
               </button>
             ) : (
-              <div className="flex items-center gap-1.5 bg-white/5 p-1.5 rounded-2xl border border-white/5">
-                <button onClick={subscribeToPush} className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl transition-all"><Bell size={18} /></button>
-                <div className="w-px h-5 bg-white/10 mx-1" />
-                <button onClick={handleSignOut} className="p-2.5 text-slate-400 rounded-xl transition-all"><User size={18} /></button>
+              <div className="flex items-center gap-1.5 bg-white/5 p-1 rounded-2xl border border-white/5">
+                <button onClick={handleSignOut} className="p-2 text-slate-400 rounded-xl transition-all" title="Sign Out"><User size={18} /></button>
               </div>
             )}
           </motion.div>

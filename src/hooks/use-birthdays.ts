@@ -85,10 +85,21 @@ export function useBirthdays() {
     fetchData();
   }, [fetchData]);
 
-  // Save Local if no user
+  // Save Local if no user & always sync to Native Android APK Bridge
   useEffect(() => {
     if (isLoaded && !user) {
       localStorage.setItem("celebrate-me-birthdays", JSON.stringify(birthdays));
+    }
+    if (isLoaded && typeof window !== "undefined") {
+      try {
+        localStorage.setItem("celebrate-me-synced-birthdays", JSON.stringify(birthdays));
+        const androidBridge = (window as any).AndroidBridge;
+        if (androidBridge && typeof androidBridge.syncBirthdays === "function") {
+          androidBridge.syncBirthdays(JSON.stringify(birthdays));
+        }
+      } catch (e) {
+        console.warn("Android bridge sync warning:", e);
+      }
     }
   }, [birthdays, isLoaded, user]);
 
@@ -223,25 +234,61 @@ export function useBirthdays() {
     return getDaysRemaining(a.date) - getDaysRemaining(b.date);
   });
 
+  const showLocalNotification = useCallback(async (title: string, body: string, icon?: string) => {
+    try {
+      if ("serviceWorker" in navigator) {
+        const reg = await navigator.serviceWorker.ready;
+        if (reg && reg.showNotification) {
+          await reg.showNotification(title, {
+            body,
+            icon: icon || "/favicon.ico",
+            vibrate: [200, 100, 200],
+          } as any);
+          return;
+        }
+      }
+    } catch {}
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body, icon: icon || "/favicon.ico" });
+    }
+  }, []);
+
   const checkNotifications = useCallback(() => {
+    if (typeof window === "undefined") return;
+    // If inside Android APK, native AlarmManager handles 6:00 AM notifications; keep bridge synced
+    const androidBridge = (window as any).AndroidBridge;
+    if (androidBridge && typeof androidBridge.syncBirthdays === "function") {
+      try {
+        androidBridge.syncBirthdays(JSON.stringify(birthdays));
+      } catch {}
+    }
+
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentHour = now.getHours();
+    const todayKey = `${currentYear}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
     let stateChanged = false;
+    let hasBirthdayToday = false;
+
     const updatedBirthdays = birthdays.map((birthday) => {
       const days = getDaysRemaining(birthday.date);
       let newB = { ...birthday };
 
+      if (days === 0 && birthday.reminder_6am !== false) {
+        hasBirthdayToday = true;
+      }
+
       const alreadySentDDay = birthday.last_notification_year === currentYear && birthday.last_notification_type === "d-day";
 
-      if (days === 0 && birthday.reminder_6am && currentHour >= 6 && !alreadySentDDay) {
-        new Notification("It's Birthday Time! 🎂", { 
-          body: `Wish ${birthday.name} a happy birthday today!`,
-          icon: birthday.avatar_url || undefined
-        });
+      if (days === 0 && birthday.reminder_6am !== false && currentHour >= 6 && !alreadySentDDay) {
+        showLocalNotification(
+          "Happy Birthday! 🎂",
+          `Wish ${birthday.name} a happy birthday today!`,
+          birthday.avatar_url || undefined
+        );
         newB.last_notification_year = currentYear;
         newB.last_notification_type = "d-day";
         stateChanged = true;
@@ -252,26 +299,74 @@ export function useBirthdays() {
     if (stateChanged) {
       setBirthdays(updatedBirthdays);
     }
-  }, [birthdays, getDaysRemaining]);
+
+    // If there are NO birthdays today and it's 6:00 AM or later, send "NO BIRTHDAY TODAY" once per day
+    if (isLoaded && !hasBirthdayToday && currentHour >= 6) {
+      const lastNoBirthdayDate = localStorage.getItem("celebrate-me-last-no-bday-date");
+      if (lastNoBirthdayDate !== todayKey) {
+        localStorage.setItem("celebrate-me-last-no-bday-date", todayKey);
+        showLocalNotification(
+          "NO BIRTHDAY TODAY",
+          "No birthdays scheduled for today. Have a great day! ✨"
+        );
+      }
+    }
+  }, [birthdays, getDaysRemaining, isLoaded, showLocalNotification]);
 
   const subscribeToPush = async () => {
-    if (!user || !("serviceWorker" in navigator)) return;
-    
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: process.env.NEXT_PUBLIC_VAPID_KEY,
-    });
+    try {
+      const androidBridge = typeof window !== "undefined" ? (window as any).AndroidBridge : null;
+      if (androidBridge) {
+        androidBridge.syncBirthdays(JSON.stringify(birthdays));
+        if (typeof androidBridge.testNotification === "function") {
+          androidBridge.testNotification();
+        }
+        alert("Android 6:00 AM Daily Notifications Active! ✅ (Test notification sent)");
+        return;
+      }
 
-    const { error } = await supabase.from("push_subscriptions").upsert({
-      user_id: user.id,
-      subscription: subscription.toJSON(),
-    });
-    
-    if (error) {
-       alert("Error saving push subscription: " + error.message);
-    } else {
-       alert("Cloud Background Notifications Enabled! 🚀");
+      if ("Notification" in window) {
+        const perm = await Notification.requestPermission();
+        if (perm !== "granted") {
+          alert("Please allow Notification permission in your phone settings!");
+          return;
+        }
+      }
+
+      const todaysBirthdays = birthdays.filter(b => getDaysRemaining(b.date) === 0 && b.reminder_6am !== false);
+      if (todaysBirthdays.length > 0) {
+        await showLocalNotification(
+          "Happy Birthday! 🎂",
+          `Wish ${todaysBirthdays.map(b => b.name).join(", ")} a happy birthday today!`
+        );
+      } else {
+        await showLocalNotification(
+          "NO BIRTHDAY TODAY",
+          "Daily 6:00 AM Notification Active! No birthdays scheduled for today. ✨"
+        );
+      }
+
+      if (user && "serviceWorker" in navigator && process.env.NEXT_PUBLIC_VAPID_KEY) {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_KEY,
+        });
+
+        const { error } = await supabase.from("push_subscriptions").upsert({
+          user_id: user.id,
+          subscription: subscription.toJSON(),
+        });
+        
+        if (error) {
+          alert("Local notification sent, but cloud subscription failed: " + error.message);
+          return;
+        }
+      }
+
+      alert("Daily 6:00 AM Notifications Enabled! 🚀");
+    } catch (e: any) {
+      alert("Notification setup info: " + (e?.message || "Enabled"));
     }
   };
 

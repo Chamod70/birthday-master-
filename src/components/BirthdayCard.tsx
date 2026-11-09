@@ -96,6 +96,12 @@ export function BirthdayCard({
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!post_url) return;
+
+    const androidBridge = typeof window !== "undefined" ? (window as any).AndroidBridge : null;
+    if (androidBridge && typeof androidBridge.downloadFile === "function") {
+      androidBridge.downloadFile(post_url, `celebration-${name}.png`);
+      return;
+    }
     
     try {
       const response = await fetch(post_url);
