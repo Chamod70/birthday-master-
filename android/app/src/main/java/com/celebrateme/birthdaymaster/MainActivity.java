@@ -15,7 +15,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.View;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Window;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
@@ -30,13 +31,9 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import java.util.Calendar;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private static final String APP_URL = "https://birthday-master2.vercel.app";
     private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
     private static final int NOTIFICATION_PERMISSION_CODE = 1002;
@@ -105,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Hide APK download button inside the native APK and auto-sync localStorage birthdays
                 String js = "(function() {" +
                         "try {" +
                         "  var apkLinks = document.querySelectorAll('a[download=\"CelebrateMe.apk\"]');" +
@@ -116,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
                         "})();";
                 view.evaluateJavascript(js, null);
 
-                // If the user opens the app after 6:00 AM and today's notification hasn't fired yet, trigger it
                 if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) >= 6) {
                     new Thread(() -> BirthdayAlarmReceiver.checkAndNotify(getApplicationContext(), false)).start();
                 }
@@ -152,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                         request.setTitle(fileName);
                         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
-                        DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                        DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
                         if (dm != null) {
                             dm.enqueue(request);
                             Toast.makeText(getApplicationContext(), "Downloading " + fileName + "...", Toast.LENGTH_SHORT).show();
@@ -175,10 +170,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= 33) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        this,
+                requestPermissions(
                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
                         NOTIFICATION_PERMISSION_CODE
                 );
@@ -251,12 +245,12 @@ public class MainActivity extends AppCompatActivity {
                 DownloadManager dm = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
                 if (dm != null) {
                     dm.enqueue(request);
-                    new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                    new Handler(Looper.getMainLooper()).post(() ->
                             Toast.makeText(context, "Downloading " + fileName + "...", Toast.LENGTH_SHORT).show()
                     );
                 }
             } catch (Exception e) {
-                new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                new Handler(Looper.getMainLooper()).post(() ->
                         Toast.makeText(context, "Download failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
             }
