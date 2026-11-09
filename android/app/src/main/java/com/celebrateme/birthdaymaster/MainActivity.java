@@ -248,13 +248,17 @@ public class MainActivity extends AppCompatActivity {
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                 request.setTitle(fileName);
                 request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
-                DownloadManager dm = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+                DownloadManager dm = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
                 if (dm != null) {
                     dm.enqueue(request);
-                    Toast.makeText(context, "Downloading " + fileName + "...", Toast.LENGTH_SHORT).show();
+                    new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                            Toast.makeText(context, "Downloading " + fileName + "...", Toast.LENGTH_SHORT).show()
+                    );
                 }
             } catch (Exception e) {
-                Toast.makeText(context, "Download failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                        Toast.makeText(context, "Download failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
             }
         }
     }
